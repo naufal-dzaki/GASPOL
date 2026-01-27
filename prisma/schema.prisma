@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VehicleCategory {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  defaultKml   Float
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  vehicleTypes VehicleType[]
+}
+
+model VehicleType {
+  id         Int             @id @default(autoincrement())
+  name       String          @unique
+  kmPerLiter Float
+  categoryId Int
+  category   VehicleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([categoryId])
+}
+
+model FuelProvider {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  fuelPrices FuelPrice[]
+}
+
+model FuelPrice {
+  id         Int          @id @default(autoincrement())
+  providerId Int
+  provider   FuelProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  fuelName   String
+  fuelType   String
+  price      Int
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([providerId, fuelName, fuelType])
+  @@index([providerId])
+}
+
+model EstimateHistory {
+  id          Int      @id @default(autoincrement())
+  startName   String
+  endName     String
+  distanceKm  Float
+  durationMin Float
+  litersUsed  Float
+  totalCost   Int
+  createdAt   DateTime @default(now())
+}
+
+model ScrapingLog {
+  id        Int      @id @default(autoincrement())
+  provider  String
+  status    String
+  message   String?  @db.Text
+  createdAt DateTime @default(now())
+}
