@@ -45,13 +45,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-muted p-4">
+      <Card className="w-full max-w-md border-border/50 shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Fuel className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
+            <Fuel className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">FUELin Admin</CardTitle>
+          <CardTitle className="text-2xl">
+            <span className="text-secondary">GAS</span>
+            <span className="italic text-primary">POL</span>
+          </CardTitle>
           <CardDescription>
             Masuk untuk mengelola data kendaraan dan harga BBM
           </CardDescription>
@@ -70,7 +73,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@fuelin.id"
+                placeholder="admin@gaspol.id"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -91,7 +94,7 @@ export default function LoginPage() {
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

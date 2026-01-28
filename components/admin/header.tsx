@@ -7,9 +7,9 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ title, description, children }: AdminHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b bg-card px-6 py-4">
+    <div className="flex items-center justify-between border-b border-border/50 bg-card px-6 py-4 shadow-sm">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-bold text-secondary">{title}</h1>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}

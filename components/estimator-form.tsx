@@ -87,26 +87,26 @@ export function EstimatorForm({ categories, providers }: EstimatorFormProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-border/50 bg-card shadow-md">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-secondary">
             <Calculator className="h-5 w-5 text-primary" />
-            Kalkulator Estimasi BBM
+            Kalkulator Perencanaan BBM
           </CardTitle>
           <CardDescription>
             Hitung estimasi biaya bahan bakar untuk perjalanan Anda di Indonesia
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/30 p-4">
+          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/50 p-4">
             <LocationSelector label="Lokasi Awal" onLocationChange={handleStartLocationChange} />
           </div>
 
-          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/30 p-4">
+          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/50 p-4">
             <LocationSelector label="Lokasi Tujuan" onLocationChange={handleEndLocationChange} />
           </div>
 
-          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/30 p-4">
+          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/50 p-4">
             <VehicleSelector
               categories={categories}
               onCategoryChange={handleCategoryChange}
@@ -114,14 +114,14 @@ export function EstimatorForm({ categories, providers }: EstimatorFormProps) {
             />
           </div>
 
-          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/30 p-4">
+          <div className="space-y-6 rounded-lg border border-border/50 bg-muted/50 p-4">
             <FuelSelector providers={providers} onFuelPriceChange={handleFuelPriceChange} />
           </div>
 
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid || loading}
-            className="w-full"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             size="lg"
           >
             {loading ? (

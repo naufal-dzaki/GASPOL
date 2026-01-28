@@ -28,9 +28,9 @@ export function EstimateResultDisplay({ result }: EstimateResultDisplayProps) {
 
   return (
     <div className="animate-fade-in space-y-4">
-      <Card className="border-primary/20 bg-primary/5">
+      <Card className="border-primary/30 bg-accent shadow-md">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg text-secondary">
             <Wallet className="h-5 w-5 text-primary" />
             Estimasi Biaya Bahan Bakar
           </CardTitle>
@@ -46,74 +46,74 @@ export function EstimateResultDisplay({ result }: EstimateResultDisplayProps) {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <MapPin className="h-4 w-4 text-secondary-foreground" />
+                <MapPin className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Rute Perjalanan</p>
-                <p className="text-sm font-medium">{result.startLocation}</p>
+                <p className="text-sm font-medium text-secondary">{result.startLocation}</p>
                 <p className="text-xs text-muted-foreground">ke</p>
-                <p className="text-sm font-medium">{result.endLocation}</p>
+                <p className="text-sm font-medium text-secondary">{result.endLocation}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <Gauge className="h-4 w-4 text-secondary-foreground" />
+                <Gauge className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Jarak Tempuh</p>
-                <p className="text-2xl font-bold">{result.distanceKm} km</p>
+                <p className="text-2xl font-bold text-secondary">{result.distanceKm} km</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <Clock className="h-4 w-4 text-secondary-foreground" />
+                <Clock className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Estimasi Waktu</p>
-                <p className="text-2xl font-bold">{formatDuration(result.durationMin)}</p>
+                <p className="text-2xl font-bold text-secondary">{formatDuration(result.durationMin)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <Car className="h-4 w-4 text-secondary-foreground" />
+                <Car className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Kendaraan</p>
-                <p className="text-sm font-bold">{result.vehicleName}</p>
+                <p className="text-sm font-bold text-secondary">{result.vehicleName}</p>
                 <p className="text-xs text-muted-foreground">{result.kmPerLiter} km/liter</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <Fuel className="h-4 w-4 text-secondary-foreground" />
+                <Fuel className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Bahan Bakar</p>
-                <p className="text-sm font-bold">
+                <p className="text-sm font-bold text-secondary">
                   {result.fuelProvider} - {result.fuelName}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -124,15 +124,15 @@ export function EstimateResultDisplay({ result }: EstimateResultDisplayProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <div className="rounded-lg bg-secondary p-2">
-                <Droplets className="h-4 w-4 text-secondary-foreground" />
+                <Droplets className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">Konsumsi BBM</p>
-                <p className="text-2xl font-bold">{result.litersUsed} L</p>
+                <p className="text-2xl font-bold text-secondary">{result.litersUsed} L</p>
               </div>
             </div>
           </CardContent>
