@@ -1,51 +1,86 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import type { FuelProviderWithPrices } from "@/lib/types"
 import { Fuel } from "lucide-react"
+import Select from "@/components/ui/client-select"
+import type { SingleValue } from "react-select"
+
+interface Option {
+  value: number
+  label: string
+}
 
 interface FuelSelectorProps {
   providers: FuelProviderWithPrices[]
   onFuelPriceChange: (fuelPriceId: number) => void
 }
 
-export function FuelSelector({ providers, onFuelPriceChange }: FuelSelectorProps) {
-  const [selectedProvider, setSelectedProvider] = useState<string>("")
-  const [selectedFuel, setSelectedFuel] = useState<string>("")
-  const [fuels, setFuels] = useState<FuelProviderWithPrices["fuelPrices"]>([])
+const selectClassNames = {
+  control: () =>
+    "min-h-[40px] rounded-md border border-input bg-background px-1 text-sm shadow-sm",
+  menu: () => "rounded-md border bg-popover shadow-md",
+  option: ({ isFocused }: any) =>
+    `cursor-pointer px-3 py-2 text-sm ${
+      isFocused ? "bg-accent" : ""
+    }`,
+  placeholder: () => "text-muted-foreground",
+  singleValue: () => "text-foreground",
+}
 
-  useEffect(() => {
-    if (selectedProvider) {
-      const provider = providers.find((p) => p.id.toString() === selectedProvider)
-      setFuels(provider?.fuelPrices || [])
-      setSelectedFuel("")
-    }
+export function FuelSelector({
+  providers,
+  onFuelPriceChange,
+}: FuelSelectorProps) {
+  const [selectedProvider, setSelectedProvider] = useState<Option | null>(null)
+  const [selectedFuel, setSelectedFuel] = useState<Option | null>(null)
+
+  const isProviderLoading = providers.length === 0
+  const isFuelLoading = isProviderLoading || !selectedProvider
+
+  const providerOptions: Option[] = useMemo(
+    () =>
+      providers.map((p) => ({
+        value: p.id,
+        label: p.name,
+      })),
+    [providers]
+  )
+
+  const fuelOptions: Option[] = useMemo(() => {
+    if (!selectedProvider) return []
+
+    const provider = providers.find(
+      (p) => p.id === selectedProvider.value
+    )
+
+    if (!provider) return []
+
+    return provider.fuelPrices.map((fuel) => ({
+      value: fuel.id,
+      label: `${fuel.fuelName} (${fuel.fuelType}) - ${new Intl.NumberFormat(
+        "id-ID",
+        {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }
+      ).format(fuel.price)}/L`,
+    }))
   }, [selectedProvider, providers])
 
-  const handleProviderChange = (value: string) => {
-    setSelectedProvider(value)
+  const handleProviderChange = (option: SingleValue<Option>) => {
+    setSelectedProvider(option)
+    setSelectedFuel(null)
   }
 
-  const handleFuelChange = (value: string) => {
-    setSelectedFuel(value)
-    onFuelPriceChange(parseInt(value))
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
+  const handleFuelChange = (option: SingleValue<Option>) => {
+    setSelectedFuel(option)
+    if (option) {
+      onFuelPriceChange(option.value)
+    }
   }
 
   return (
@@ -56,40 +91,35 @@ export function FuelSelector({ providers, onFuelPriceChange }: FuelSelectorProps
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* PROVIDER */}
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Provider BBM *</Label>
-          <Select value={selectedProvider} onValueChange={handleProviderChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih Provider" />
-            </SelectTrigger>
-            <SelectContent>
-              {providers.map((provider) => (
-                <SelectItem key={provider.id} value={provider.id.toString()}>
-                  {provider.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs text-muted-foreground">
+            Provider BBM *
+          </Label>
+          <Select
+            value={selectedProvider}
+            options={providerOptions}
+            onChange={handleProviderChange}
+            placeholder="Pilih Provider"
+            classNames={selectClassNames}
+            isLoading={isProviderLoading}
+            isDisabled={isProviderLoading}
+          />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Jenis BBM *</Label>
+          <Label className="text-xs text-muted-foreground">
+            Jenis BBM *
+          </Label>
           <Select
             value={selectedFuel}
-            onValueChange={handleFuelChange}
-            disabled={!selectedProvider || fuels.length === 0}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih BBM" />
-            </SelectTrigger>
-            <SelectContent>
-              {fuels.map((fuel) => (
-                <SelectItem key={fuel.id} value={fuel.id.toString()}>
-                  {fuel.fuelName} ({fuel.fuelType}) - {formatPrice(fuel.price)}/L
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={fuelOptions}
+            onChange={handleFuelChange}
+            placeholder="Pilih BBM"
+            classNames={selectClassNames}
+            isLoading={isFuelLoading}
+            isDisabled={isFuelLoading || fuelOptions.length === 0}
+          />
         </div>
       </div>
     </div>

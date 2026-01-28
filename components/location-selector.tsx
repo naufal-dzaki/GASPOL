@@ -1,38 +1,42 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Select from "@/components/ui/client-select"
 import { Label } from "@/components/ui/label"
+import { MapPin } from "lucide-react"
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { getProvinces, getRegencies, getDistricts, getVillages } from "@/actions/location"
+  getProvinces,
+  getRegencies,
+  getDistricts,
+  getVillages,
+} from "@/actions/location"
+
 import type { Province, Regency, District, Village } from "@/lib/types"
-import { MapPin, Loader2 } from "lucide-react"
 
 interface LocationSelectorProps {
   label: string
   onLocationChange: (locationString: string) => void
 }
 
-export function LocationSelector({ label, onLocationChange }: LocationSelectorProps) {
-  const [provinces, setProvinces] = useState<Province[]>([])
-  const [regencies, setRegencies] = useState<Regency[]>([])
-  const [districts, setDistricts] = useState<District[]>([])
-  const [villages, setVillages] = useState<Village[]>([])
+interface Option {
+  value: string
+  label: string
+}
 
-  const [selectedProvince, setSelectedProvince] = useState<string>("")
-  const [selectedRegency, setSelectedRegency] = useState<string>("")
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("")
-  const [selectedVillage, setSelectedVillage] = useState<string>("")
+export function LocationSelector({
+  label,
+  onLocationChange,
+}: LocationSelectorProps) {
+  const [provinces, setProvinces] = useState<Option[]>([])
+  const [regencies, setRegencies] = useState<Option[]>([])
+  const [districts, setDistricts] = useState<Option[]>([])
+  const [villages, setVillages] = useState<Option[]>([])
 
-  const [provinceName, setProvinceName] = useState<string>("")
-  const [regencyName, setRegencyName] = useState<string>("")
-  const [districtName, setDistrictName] = useState<string>("")
-  const [villageName, setVillageName] = useState<string>("")
+  const [province, setProvince] = useState<Option | null>(null)
+  const [regency, setRegency] = useState<Option | null>(null)
+  const [district, setDistrict] = useState<Option | null>(null)
+  const [village, setVillage] = useState<Option | null>(null)
 
   const [loading, setLoading] = useState({
     provinces: true,
@@ -42,97 +46,87 @@ export function LocationSelector({ label, onLocationChange }: LocationSelectorPr
   })
 
   useEffect(() => {
-    async function loadProvinces() {
-      setLoading((prev) => ({ ...prev, provinces: true }))
-      const data = await getProvinces()
-      setProvinces(data)
-      setLoading((prev) => ({ ...prev, provinces: false }))
+    async function load() {
+      setLoading((p) => ({ ...p, provinces: true }))
+      const data: Province[] = await getProvinces()
+      setProvinces(data.map((p) => ({ value: p.code, label: p.name })))
+      setLoading((p) => ({ ...p, provinces: false }))
     }
-    loadProvinces()
+    load()
   }, [])
 
   useEffect(() => {
-    if (selectedProvince) {
-      async function loadRegencies() {
-        setLoading((prev) => ({ ...prev, regencies: true }))
-        const data = await getRegencies(selectedProvince)
-        setRegencies(data)
-        setLoading((prev) => ({ ...prev, regencies: false }))
-      }
-      loadRegencies()
-      setSelectedRegency("")
-      setSelectedDistrict("")
-      setSelectedVillage("")
-      setRegencies([])
-      setDistricts([])
-      setVillages([])
+    if (!province) return
+
+    async function load() {
+      setLoading((p) => ({ ...p, regencies: true }))
+      const data: Regency[] = await getRegencies(province!.value)
+      setRegencies(data.map((r) => ({ value: r.code, label: r.name })))
+      setLoading((p) => ({ ...p, regencies: false }))
     }
-  }, [selectedProvince])
+
+    load()
+
+    setRegency(null)
+    setDistrict(null)
+    setVillage(null)
+    setDistricts([])
+    setVillages([])
+  }, [province])
 
   useEffect(() => {
-    if (selectedRegency) {
-      async function loadDistricts() {
-        setLoading((prev) => ({ ...prev, districts: true }))
-        const data = await getDistricts(selectedRegency)
-        setDistricts(data)
-        setLoading((prev) => ({ ...prev, districts: false }))
-      }
-      loadDistricts()
-      setSelectedDistrict("")
-      setSelectedVillage("")
-      setDistricts([])
-      setVillages([])
+    if (!regency) return
+
+    async function load() {
+      setLoading((p) => ({ ...p, districts: true }))
+      const data: District[] = await getDistricts(regency!.value)
+      setDistricts(data.map((d) => ({ value: d.code, label: d.name })))
+      setLoading((p) => ({ ...p, districts: false }))
     }
-  }, [selectedRegency])
+
+    load()
+
+    setDistrict(null)
+    setVillage(null)
+    setVillages([])
+  }, [regency])
 
   useEffect(() => {
-    if (selectedDistrict) {
-      async function loadVillages() {
-        setLoading((prev) => ({ ...prev, villages: true }))
-        const data = await getVillages(selectedDistrict)
-        setVillages(data)
-        setLoading((prev) => ({ ...prev, villages: false }))
-      }
-      loadVillages()
-      setSelectedVillage("")
-      setVillages([])
+    if (!district) return
+
+    async function load() {
+      setLoading((p) => ({ ...p, villages: true }))
+      const data: Village[] = await getVillages(district!.value)
+      setVillages(data.map((v) => ({ value: v.code, label: v.name })))
+      setLoading((p) => ({ ...p, villages: false }))
     }
-  }, [selectedDistrict])
+
+    load()
+
+    setVillage(null)
+  }, [district])
 
   useEffect(() => {
-    const parts = [villageName, districtName, regencyName, provinceName].filter(Boolean)
-    const locationString = parts.join(", ")
-    onLocationChange(locationString)
-  }, [provinceName, regencyName, districtName, villageName, onLocationChange])
+    const parts = [
+      village?.label,
+      district?.label,
+      regency?.label,
+      province?.label,
+    ].filter(Boolean)
 
-  const handleProvinceChange = (value: string) => {
-    setSelectedProvince(value)
-    const province = provinces.find((p) => p.code === value)
-    setProvinceName(province?.name || "")
-    setRegencyName("")
-    setDistrictName("")
-    setVillageName("")
-  }
+    onLocationChange(parts.join(", "))
+  }, [province, regency, district, village, onLocationChange])
 
-  const handleRegencyChange = (value: string) => {
-    setSelectedRegency(value)
-    const regency = regencies.find((r) => r.code === value)
-    setRegencyName(regency?.name || "")
-    setDistrictName("")
-    setVillageName("")
-  }
-
-  const handleDistrictChange = (value: string) => {
-    setSelectedDistrict(value)
-    const district = districts.find((d) => d.code === value)
-    setDistrictName(district?.name || "")
-    setVillageName("")
-  }
-
-  const handleVillageChange = (value: string) => {
-    setSelectedVillage(value)
-    const village = villages.find((v) => v.code === value)
-    setVillageName(village?.name || "")
+  const selectClassNames = {
+    control: () =>
+      "min-h-[40px] rounded-md border border-input bg-background px-1 text-sm shadow-sm",
+    menu: () => "rounded-md border bg-popover shadow-md",
+    option: ({ isFocused }: any) =>
+      `cursor-pointer px-3 py-2 text-sm ${
+        isFocused ? "bg-accent" : ""
+      }`,
+    placeholder: () => "text-muted-foreground",
+    singleValue: () => "text-foreground",
   }
 
   return (
@@ -144,107 +138,62 @@ export function LocationSelector({ label, onLocationChange }: LocationSelectorPr
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Provinsi *</Label>
-          <Select value={selectedProvince} onValueChange={handleProvinceChange}>
-            <SelectTrigger className="w-full">
-              {loading.provinces ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <SelectValue placeholder="Pilih Provinsi" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {provinces.map((province) => (
-                <SelectItem key={province.code} value={province.code}>
-                  {province.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs text-muted-foreground">
+            Provinsi *
+          </Label>
+          <Select
+            placeholder="Cari provinsi..."
+            options={provinces}
+            value={province}
+            onChange={setProvince}
+            isLoading={loading.provinces}
+            classNames={selectClassNames}
+          />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Kota/Kabupaten *</Label>
+          <Label className="text-xs text-muted-foreground">
+            Kota / Kabupaten *
+          </Label>
           <Select
-            value={selectedRegency}
-            onValueChange={handleRegencyChange}
-            disabled={!selectedProvince || loading.regencies}
-          >
-            <SelectTrigger className="w-full">
-              {loading.regencies ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <SelectValue placeholder="Pilih Kota/Kabupaten" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {regencies.map((regency) => (
-                <SelectItem key={regency.code} value={regency.code}>
-                  {regency.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Cari kota / kabupaten..."
+            options={regencies}
+            value={regency}
+            onChange={setRegency}
+            isDisabled={!province}
+            isLoading={loading.regencies}
+            classNames={selectClassNames}
+          />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Kecamatan (opsional)</Label>
+          <Label className="text-xs text-muted-foreground">
+            Kecamatan (opsional)
+          </Label>
           <Select
-            value={selectedDistrict}
-            onValueChange={handleDistrictChange}
-            disabled={!selectedRegency || loading.districts}
-          >
-            <SelectTrigger className="w-full">
-              {loading.districts ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <SelectValue placeholder="Pilih Kecamatan" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {districts.map((district) => (
-                <SelectItem key={district.code} value={district.code}>
-                  {district.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Cari kecamatan..."
+            options={districts}
+            value={district}
+            onChange={setDistrict}
+            isDisabled={!regency}
+            isLoading={loading.districts}
+            classNames={selectClassNames}
+          />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Kelurahan/Desa (opsional)</Label>
+          <Label className="text-xs text-muted-foreground">
+            Kelurahan / Desa (opsional)
+          </Label>
           <Select
-            value={selectedVillage}
-            onValueChange={handleVillageChange}
-            disabled={!selectedDistrict || loading.villages}
-          >
-            <SelectTrigger className="w-full">
-              {loading.villages ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <SelectValue placeholder="Pilih Kelurahan" />
-              )}
-            </SelectTrigger>
-            <SelectContent>
-              {villages.map((village) => (
-                <SelectItem key={village.code} value={village.code}>
-                  {village.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Cari kelurahan / desa..."
+            options={villages}
+            value={village}
+            onChange={setVillage}
+            isDisabled={!district}
+            isLoading={loading.villages}
+            classNames={selectClassNames}
+          />
         </div>
       </div>
     </div>

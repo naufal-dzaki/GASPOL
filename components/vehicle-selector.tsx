@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import type { VehicleCategoryWithTypes } from "@/lib/types"
 import { Car } from "lucide-react"
+import Select from "@/components/ui/client-select"
+import type { SingleValue } from "react-select"
+
+interface Option {
+  value: number | "default"
+  label: string
+}
 
 interface VehicleSelectorProps {
   categories: VehicleCategoryWithTypes[]
@@ -18,35 +18,78 @@ interface VehicleSelectorProps {
   onTypeChange: (typeId: number | null) => void
 }
 
-export function VehicleSelector({ categories, onCategoryChange, onTypeChange }: VehicleSelectorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
-  const [selectedType, setSelectedType] = useState<string>("")
-  const [vehicleTypes, setVehicleTypes] = useState<VehicleCategoryWithTypes["vehicleTypes"]>([])
+export function VehicleSelector({
+  categories,
+  onCategoryChange,
+  onTypeChange,
+}: VehicleSelectorProps) {
+  const [selectedCategory, setSelectedCategory] = useState<Option | null>(null)
+  const [selectedType, setSelectedType] = useState<Option | null>(null)
+  const isCategoryLoading = categories.length === 0
+  const isTypeLoading = isCategoryLoading || !selectedCategory
 
-  useEffect(() => {
-    if (selectedCategory) {
-      const category = categories.find((c) => c.id.toString() === selectedCategory)
-      setVehicleTypes(category?.vehicleTypes || [])
-      setSelectedType("")
+
+  const categoryOptions: Option[] = useMemo(
+    () =>
+      categories.map((c) => ({
+        value: c.id,
+        label: `${c.name} (${c.defaultKml} km/l)`,
+      })),
+    [categories]
+  )
+
+  const typeOptions: Option[] = useMemo(() => {
+    if (!selectedCategory) return []
+
+    const category = categories.find(
+      (c) => c.id === selectedCategory.value
+    )
+
+    if (!category) return []
+
+    return [
+      {
+        value: "default",
+        label: `Default (${category.defaultKml} km/l)`,
+      },
+      ...category.vehicleTypes.map((t) => ({
+        value: t.id,
+        label: `${t.name} (${t.kmPerLiter} km/l)`,
+      })),
+    ]
+  }, [selectedCategory, categories])
+
+  const handleCategoryChange = (option: SingleValue<Option>) => {
+    setSelectedCategory(option)
+    setSelectedType(null)
+
+    if (option && typeof option.value === "number") {
+      onCategoryChange(option.value)
       onTypeChange(null)
     }
-  }, [selectedCategory, categories, onTypeChange])
-
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value)
-    onCategoryChange(parseInt(value))
   }
 
-  const handleTypeChange = (value: string) => {
-    setSelectedType(value)
-    if (value === "default") {
+  const handleTypeChange = (option: SingleValue<Option>) => {
+    setSelectedType(option)
+
+    if (!option || option.value === "default") {
       onTypeChange(null)
     } else {
-      onTypeChange(parseInt(value))
+      onTypeChange(option.value)
     }
   }
 
-  const selectedCategoryData = categories.find((c) => c.id.toString() === selectedCategory)
+  const selectClassNames = {
+    control: () =>
+      "min-h-[40px] rounded-md border border-input bg-background px-1 text-sm shadow-sm",
+    menu: () => "rounded-md border bg-popover shadow-md",
+    option: ({ isFocused }: any) =>
+      `cursor-pointer px-3 py-2 text-sm ${
+        isFocused ? "bg-accent" : ""
+      }`,
+    placeholder: () => "text-muted-foreground",
+    singleValue: () => "text-foreground",
+  }
 
   return (
     <div className="space-y-4">
@@ -57,44 +100,32 @@ export function VehicleSelector({ categories, onCategoryChange, onTypeChange }: 
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Kategori Kendaraan *</Label>
-          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih Kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id.toString()}>
-                  {category.name} ({category.defaultKml} km/l)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label className="text-xs text-muted-foreground">
+            Kategori Kendaraan *
+          </Label>
+          <Select
+            value={selectedCategory}
+            options={categoryOptions}
+            onChange={handleCategoryChange}
+            placeholder="Pilih Kategori"
+            classNames={selectClassNames}
+            isLoading={isCategoryLoading}
+          />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Tipe Kendaraan (opsional)</Label>
+          <Label className="text-xs text-muted-foreground">
+            Tipe Kendaraan (opsional)
+          </Label>
           <Select
             value={selectedType}
-            onValueChange={handleTypeChange}
-            disabled={!selectedCategory || vehicleTypes.length === 0}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pilih Tipe (opsional)" />
-            </SelectTrigger>
-            <SelectContent>
-              {selectedCategoryData && (
-                <SelectItem value="default">
-                  Default ({selectedCategoryData.defaultKml} km/l)
-                </SelectItem>
-              )}
-              {vehicleTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id.toString()}>
-                  {type.name} ({type.kmPerLiter} km/l)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={typeOptions}
+            onChange={handleTypeChange}
+            placeholder="Pilih Tipe (opsional)"
+            isDisabled={!selectedCategory || typeOptions.length === 0}
+            classNames={selectClassNames}
+            isLoading={isTypeLoading}
+          />
         </div>
       </div>
     </div>
